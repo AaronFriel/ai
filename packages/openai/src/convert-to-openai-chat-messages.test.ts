@@ -44,6 +44,20 @@ describe('user messages', () => {
 
     expect(result).toEqual([{ role: 'user', content: 'Hello' }]);
   });
+
+  it('should convert messages with a "name" provider metadata field', async () => {
+    const result = convertToOpenAIChatMessages({
+      prompt: [
+        {
+          role: 'user',
+          providerMetadata: { openai: { name: 'foo' } },
+          content: [{ type: 'text', text: 'Hello' }],
+        },
+      ],
+    });
+
+    expect(result).toEqual([{ role: 'user', name: 'foo', content: 'Hello' }]);
+  });
 });
 
 describe('tool calls', () => {

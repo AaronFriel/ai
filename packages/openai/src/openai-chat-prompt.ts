@@ -9,11 +9,13 @@ export type ChatCompletionMessageParam =
 
 export interface ChatCompletionSystemMessageParam {
   role: 'system';
+  name?: string | undefined;
   content: string;
 }
 
 export interface ChatCompletionUserMessageParam {
   role: 'user';
+  name?: string | undefined;
   content: string | Array<ChatCompletionContentPart>;
 }
 
@@ -35,6 +37,7 @@ export interface ChatCompletionContentPartText {
 
 export interface ChatCompletionAssistantMessageParam {
   role: 'assistant';
+  name?: string;
   content?: string | null;
   tool_calls?: Array<ChatCompletionMessageToolCall>;
   /**

@@ -1,7 +1,14 @@
 import {
+  LanguageModelV1ImagePart,
+  LanguageModelV1Message,
+  LanguageModelV1Prompt,
+  LanguageModelV1TextPart,
+} from '@ai-sdk/provider';
+import {
   convertToLanguageModelMessage,
   convertToLanguageModelPrompt,
 } from './convert-to-language-model-prompt';
+import { generateId } from '@ai-sdk/provider-utils';
 
 describe('convertToLanguageModelPrompt', () => {
   describe('user message', () => {
@@ -44,7 +51,7 @@ describe('convertToLanguageModelPrompt', () => {
               },
             ],
           },
-        ]);
+        ] satisfies LanguageModelV1Prompt);
       });
 
       it('should download images for user image parts with string URLs when model does not support image URLs', async () => {
@@ -86,6 +93,100 @@ describe('convertToLanguageModelPrompt', () => {
             ],
           },
         ]);
+      });
+    });
+
+    describe('provider metadata', () => {
+      it('should pass through provider metadata', async () => {
+        const providerName = generateId();
+        const key = generateId();
+        const value = generateId();
+
+        const result = await convertToLanguageModelPrompt({
+          prompt: {
+            type: 'messages',
+            prompt: undefined,
+            messages: [
+              {
+                role: 'user',
+                content: [
+                  {
+                    type: 'text',
+                    text: 'hello, world!',
+                    experimental_providerMetadata: {
+                      [providerName]: {
+                        name: 'foo',
+                        [key]: value,
+                      },
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+          modelSupportsImageUrls: undefined,
+        });
+
+        expect(result).toEqual([
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: 'hello, world!',
+                providerMetadata: {
+                  [providerName]: {
+                    name: 'foo',
+                    [key]: value,
+                  },
+                },
+              },
+            ],
+          },
+        ] satisfies LanguageModelV1Prompt);
+      });
+
+      it('should pass through provider metadata at the message level', async () => {
+        const providerName = generateId();
+        const key = generateId();
+        const value = generateId();
+
+        const result = await convertToLanguageModelPrompt({
+          prompt: {
+            type: 'messages',
+            prompt: undefined,
+            messages: [
+              {
+                role: 'user',
+                content: [
+                  {
+                    type: 'text',
+                    text: 'hello, world!',
+                  },
+                ],
+                experimental_providerMetadata: {
+                  [providerName]: {
+                    name: 'foo',
+                    [key]: value,
+                  },
+                },
+              },
+            ],
+          },
+          modelSupportsImageUrls: undefined,
+        });
+
+        expect(result).toEqual([
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: 'hello, world!',
+              },
+            ],
+          },
+        ] satisfies LanguageModelV1Prompt);
       });
     });
   });

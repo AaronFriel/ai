@@ -14,21 +14,27 @@ export function convertToOpenAIChatMessages({
 }): OpenAIChatPrompt {
   const messages: OpenAIChatPrompt = [];
 
-  for (const { role, content } of prompt) {
+  for (const { role, content, providerMetadata } of prompt) {
+    const name = providerMetadata?.openai?.name;
+    if (typeof name !== 'undefined' || typeof name !== 'string') {
+      throw new Error(`Expected providerMetadata.openai.name to be a string, but got: ${typeof name}`);
+    }
+
     switch (role) {
       case 'system': {
-        messages.push({ role: 'system', content });
+        messages.push({ role: 'system', name, content: message.content });
         break;
       }
 
       case 'user': {
         if (content.length === 1 && content[0].type === 'text') {
-          messages.push({ role: 'user', content: content[0].text });
+          messages.push({ role: 'user', name, content: content[0].text });
           break;
         }
 
         messages.push({
           role: 'user',
+          name,
           content: content.map(part => {
             switch (part.type) {
               case 'text': {
